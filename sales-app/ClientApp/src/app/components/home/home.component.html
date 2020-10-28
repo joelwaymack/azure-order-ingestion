@@ -1,0 +1,21 @@
+<h2>New Batch</h2>
+  <form (ngSubmit)="onSubmit()" #orderBatchForm="ngForm">
+    <mat-form-field>
+      <mat-label>Batch Size</mat-label>
+      <input matInput [(ngModel)]="batchSize" name="batchSize" type="number" max="10">
+      <mat-hint>Number of orders in batch (Max: 10)</mat-hint>
+    </mat-form-field>
+    <button class="submit-button" mat-raised-button type="submit" [disabled]="batchSize > 10">Submit Batch</button>
+  </form>
+<br>
+
+<h2>Batches</h2>
+<div *ngFor="let orderBatch of (orderBatches$ | async) | keyvalue">
+    <span>{{ orderBatch.value.id }}</span>
+    <span class="shipped-orders">({{ orderBatch.value.shippedOrders ? orderBatch.value.shippedOrders : 0 }}/{{ orderBatch.value.orders.length }})</span>
+</div>
+
+<h2>Order Updates</h2>
+<div *ngFor="let orderUpdate of orderUpdates$ | async">
+    {{ orderUpdate | json }}
+</div>
