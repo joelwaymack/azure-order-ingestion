@@ -1,0 +1,21 @@
+{
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "orders",
+      "direction": "in",
+      "leaseCollectionName": "OrderLeases",
+      "connectionStringSetting": "CosmosConnectionString",
+      "databaseName": "Sales",
+      "collectionName": "Orders",
+      "createLeaseCollectionIfNotExists": "true"
+    },
+    {
+      "type": "signalR",
+      "name": "orderUpdateMessages",
+      "hubName": "orderUpdateHub",
+      "connectionStringSetting": "SignalRConnectionString",
+      "direction": "out"
+    }
+  ]
+}
