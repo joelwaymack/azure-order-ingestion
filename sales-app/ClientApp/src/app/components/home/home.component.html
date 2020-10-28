@@ -3,19 +3,33 @@
     <mat-form-field>
       <mat-label>Batch Size</mat-label>
       <input matInput [(ngModel)]="batchSize" name="batchSize" type="number" max="10">
-      <mat-hint>Number of orders in batch (Max: 10)</mat-hint>
+      <mat-hint>Number of orders in batch<br>(Default: Random; Max: 1000)</mat-hint>
     </mat-form-field>
-    <button class="submit-button" mat-raised-button type="submit" [disabled]="batchSize > 10">Submit Batch</button>
+    <button class="submit-button" mat-raised-button type="submit" [disabled]="batchSize > 1000">Submit Batch</button>
   </form>
 <br>
 
 <h2>Batches</h2>
-<div *ngFor="let orderBatch of (orderBatches$ | async) | keyvalue">
-    <span>{{ orderBatch.value.id }}</span>
-    <span class="shipped-orders">({{ orderBatch.value.shippedOrders ? orderBatch.value.shippedOrders : 0 }}/{{ orderBatch.value.orders.length }})</span>
-</div>
+<table>
+  <thead>
+    <tr>
+      <td>Batch Id</td>
+      <td>Batch Timestamp</td>
+      <td>Shipped Orders</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let orderBatch of (orderBatches$ | async)">
+      <td>{{ orderBatch.id }}</td>
+      <td>{{ orderBatch.batchTimestamp }}</td>
+      <td>{{ orderBatch.shippedOrders ? orderBatch.shippedOrders : 0 }}/{{ orderBatch.orders.length }}</td>
+    </tr>
+  </tbody>
+</table>
 
-<h2>Order Updates</h2>
-<div *ngFor="let orderUpdate of orderUpdates$ | async">
-    {{ orderUpdate | json }}
+<h2>Order Updates <mat-slide-toggle [(ngModel)]="displayOrderUpdates" (toggleChange)="toggleOrderUpdates()"></mat-slide-toggle></h2>
+<div *ngIf="displayOrderUpdates">
+  <div *ngFor="let orderUpdate of orderUpdates$ | async">
+      {{ orderUpdate | json }}
+  </div>
 </div>

@@ -20,8 +20,8 @@ namespace Sales.App.Controllers
         [HttpPost("{producerId}")]
         public async Task<OrderBatch> PostAsync(string producerId, int batchSize = 0)
         {
-            // Restrict batch size to 10.
-            batchSize = batchSize <= 10 ? batchSize : 10;
+            // Restrict batch size to 1000.
+            batchSize = batchSize <= 1000 ? batchSize : 1000;
 
             var orderBatch = await orderService.PublishAsync(producerId, batchSize);
 

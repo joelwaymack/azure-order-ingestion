@@ -10,8 +10,9 @@ import { OrderService } from 'src/app/services/order.service';
 })
 export class HomeComponent {
   public batchSize: Number;
-  public orderBatches$: Observable<Map<string, OrderBatch>>;
+  public orderBatches$: Observable<OrderBatch[]>;
   public orderUpdates$: Observable<any[]>;
+  public displayOrderUpdates: false;
 
   constructor(private orderService: OrderService) {
     this.orderBatches$ = this.orderService.orderBatches$;
@@ -21,5 +22,10 @@ export class HomeComponent {
   public onSubmit(): void {
     this.orderService.postBatch(this.batchSize);
     this.batchSize = undefined;
+  }
+
+  public toggleOrderUpdates(): void {
+    // Value hasn't changed yet.
+    this.orderService.setPublishOrderUpdates(!this.displayOrderUpdates);
   }
 }

@@ -12,8 +12,9 @@ export class OrderService {
   private hubConnection: HubConnection;
   private orderUpdates = [];
   private _orderUpdates$: BehaviorSubject<any[]> = new BehaviorSubject(this.orderUpdates);
-  private orderBatches: Map<string, OrderBatch> = new Map();
-  private _orderBatches$: BehaviorSubject<Map<string, OrderBatch>> = new BehaviorSubject(this.orderBatches);
+  private orderBatches: OrderBatch[] = [];
+  private _orderBatches$: BehaviorSubject<OrderBatch[]> = new BehaviorSubject([]);
+  private publishOrderUpdates = false;
 
   private readonly httpOptions = {
     headers: new HttpHeaders({
@@ -25,7 +26,7 @@ export class OrderService {
     return this._orderUpdates$;
   }
 
-  public get orderBatches$(): Observable<Map<string, OrderBatch>> {
+  public get orderBatches$(): Observable<OrderBatch[]> {
     return this._orderBatches$;
   }
 
@@ -34,15 +35,24 @@ export class OrderService {
   }
 
   public postBatch(batchSize: Number): Observable<OrderBatch> {
-    var url = batchSize && batchSize > 0 ? this.url + '?batchSize=' + batchSize : this.url;
-    var orderBatch$ = this.http.post<OrderBatch>(url, undefined, this.httpOptions);
+    const url = batchSize && batchSize > 0 ? this.url + '?batchSize=' + batchSize : this.url;
+    const orderBatch$ = this.http.post<OrderBatch>(url, undefined, this.httpOptions);
 
     orderBatch$.subscribe((orderBatch) => {
-      this.orderBatches.set(orderBatch.id, orderBatch);
+      this.orderBatches.unshift(orderBatch);
       this._orderBatches$.next(this.orderBatches);
     });
 
     return orderBatch$;
+  }
+
+  public setPublishOrderUpdates(publishOrderUpdates): void {
+    this.publishOrderUpdates = publishOrderUpdates;
+
+    if (!publishOrderUpdates) {
+      this.orderUpdates = [];
+      this._orderUpdates$.next(this.orderUpdates);
+    }
   }
 
   private setupOrderUpdates(baseUrl: string): void {
@@ -62,13 +72,16 @@ export class OrderService {
   private updateOrderReceived(data): void {
     // Not using authenticated users so only handle orders created by this browser.
     if (data.producerId && data.producerId == this.hubConnection.connectionId && data.status == "Shipped") {
-      const batch = this.orderBatches.get(data.batchId);
+      
+      const batch = this.orderBatches.find((b) => b.id == data.batchId);
       batch.shippedOrders = batch.shippedOrders == undefined ? 1 : batch.shippedOrders + 1;
       batch.percentOrdersShipped = Math.ceil((batch.shippedOrders / batch.orders.length) * 100);
       this._orderBatches$.next(this.orderBatches);
 
-      this.orderUpdates.unshift(data);
-      this._orderUpdates$.next(this.orderUpdates);
+      if(this.publishOrderUpdates) {
+        this.orderUpdates.unshift(data);
+        this._orderUpdates$.next(this.orderUpdates);
+      }
     }
   }
 }
